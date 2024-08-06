@@ -113,7 +113,7 @@ app.post("/message", (req, res) => {
     );
   }
 
-  res.status(200).json({ gas: gasValue, toggle: toggle,"email":emailHolder});
+  res.status(200).json({ gas: gasValue, toggle: toggle,email:emailHolder});
 });
 
 // Return current gas level and toggle state
