@@ -18,6 +18,7 @@ const port = process.env.PORT || 8000;
 let gasValue = 0;
 let toggle = "OFF";
 let emailSent = false;
+let emailHolder;
 
 /**
  * Send an email using Nodemailer
@@ -50,9 +51,11 @@ function sendEmail(to, subject, text, html = "") {
     // Send the email
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
+        emailHolder="Error sending email";
         console.error("Error occurred:", error);
         reject(error); // Reject the promise if there's an error
       } else {
+        emailHolder="Email sent 200k";
         console.log("Email sent:", info.response);
         resolve(info); // Resolve the promise if email is sent successfully
       }
@@ -110,7 +113,7 @@ app.post("/message", (req, res) => {
     );
   }
 
-  res.status(200).json({ gas: gasValue, toggle: toggle });
+  res.status(200).json({ gas: gasValue, toggle: toggle,"email":emailHolder});
 });
 
 // Return current gas level and toggle state
