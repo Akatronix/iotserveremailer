@@ -18,7 +18,7 @@ const port = process.env.PORT || 8000;
 let gasValue = 0;
 let toggle = "OFF";
 let emailSent = false;
-let emailHolder;
+let emailHolder="no email yet";
 
 /**
  * Send an email using Nodemailer
