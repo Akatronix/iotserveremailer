@@ -51,7 +51,7 @@ function sendEmail(to, subject, text, html = "") {
     // Send the email
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
-        emailHolder="Error sending email";
+        emailHolder=`Error sending email ${error}`;
         console.error("Error occurred:", error);
         reject(error); // Reject the promise if there's an error
       } else {
