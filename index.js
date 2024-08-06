@@ -17,6 +17,7 @@ const port = process.env.PORT || 8000;
 // Initialize variables
 let gasValue = 0;
 let toggle = "OFF";
+let emailSent = false;
 
 /**
  * Send an email using Nodemailer
@@ -24,34 +25,63 @@ let toggle = "OFF";
  * @param {string} subject - Subject of the email
  * @param {string} text - Plain text body of the email
  * @param {string} [html] - HTML body of the email (optional)
+ * @returns {Promise} - A Promise that resolves if the email is sent successfully, and rejects otherwise
  */
 function sendEmail(to, subject, text, html = "") {
-  // Create a transporter object
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.APP_PASSWORD,
-    },
+  return new Promise((resolve, reject) => {
+    // Create a transporter object
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user:"yemitella32@gmail.com",
+        pass: "efotyasyuvpetysa",
+      },
+    });
+
+    // Define email options
+    const mailOptions = {
+      from: "yemitella32@gmail.com",
+      to: to,
+      subject: subject,
+      text: text,
+      html: html,
+    };
+
+    // Send the email
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error occurred:", error);
+        reject(error); // Reject the promise if there's an error
+      } else {
+        console.log("Email sent:", info.response);
+        resolve(info); // Resolve the promise if email is sent successfully
+      }
+    });
   });
+}
 
-  // Define email options
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: to,
-    subject: subject,
-    text: text,
-    html: html,
-  };
-
-  // Send the email
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.error("Error occurred:", error);
-    } else {
-      console.log("Email sent:", info.response);
+/**
+ * Try to send an email, retrying if it fails
+ * @param {string} to - Recipient's email address
+ * @param {string} subject - Subject of the email
+ * @param {string} text - Plain text body of the email
+ * @param {string} [html] - HTML body of the email (optional)
+ */
+async function trySendEmail(to, subject, text, html = "") {
+  let retries = 3;
+  while (retries > 0) {
+    try {
+      await sendEmail(to, subject, text, html);
+      emailSent = true;
+      break; // Exit the loop if email is sent successfully
+    } catch (error) {
+      retries -= 1;
+      console.error(`Retrying... (${3 - retries} attempt(s) failed)`);
+      if (retries === 0) {
+        console.error("Failed to send email after 3 attempts.");
+      }
     }
-  });
+  }
 }
 
 // Routes
@@ -66,10 +96,15 @@ app.post("/message", (req, res) => {
   const { gas } = req.body;
   gasValue = gas;
 
-  // Check if gas level exceeds 500 and send an email
-  if (gasValue > 500) {
-    sendEmail(
-      "iotemailmessager@gmail.com", // Replace with recipient's email
+  // Check if gas level is below 500 and reset the emailSent flag
+  if (gasValue <= 500) {
+    emailSent = false;
+  }
+
+  // Check if gas level exceeds 500 and if email hasn't been sent yet
+  if (gasValue > 500 && !emailSent) {
+    trySendEmail(
+      "yemiabisoye00@gmail.com", // Replace with recipient's email
       "Gas Level Alert",
       `Alert: The Gas Level Has Exceeded 500. Current Gas Level: ${gasValue}`
     );
